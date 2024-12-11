@@ -1,18 +1,46 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import Button from '../components/Button';
-import Header from '../components/Header';
+import React from "react";
+import { useAuth } from "react-oidc-context";
 
 export default function Home() {
-  const navigate = useNavigate();
+  const auth = useAuth();
+
+  if (auth.isAuthenticated) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <h1>Welcome back, {auth.user?.profile.email}!</h1>
+        <button
+          onClick={() => auth.removeUser()}
+          style={{
+            padding: "10px 20px",
+            backgroundColor: "#6200ea",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+          }}
+        >
+          Sign Out
+        </button>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ textAlign: 'center' }}>
-      <Header title="Welcome to the Trivia Game!" />
-      <Button
-        text="Start Quiz"
-        onClick={() => navigate('/quiz')}
-      />
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h1>Welcome to the Trivia Game!</h1>
+      <button
+        onClick={() => auth.signinRedirect()}
+        style={{
+          padding: "10px 20px",
+          backgroundColor: "#6200ea",
+          color: "white",
+          border: "none",
+          borderRadius: "5px",
+          cursor: "pointer",
+        }}
+      >
+        Sign In
+      </button>
     </div>
   );
 }

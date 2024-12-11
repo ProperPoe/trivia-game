@@ -28,7 +28,7 @@ export default function Quiz() {
 
     const nextQuestionIndex = currentQuestionIndex + 1;
 
-    if (nextQuestionIndex < questions.length) {
+    if (nextQuestionIndex <= questions.length) {
       setCurrentQuestionIndex(nextQuestionIndex);
     } else {
       console.log(`Game over! Final score: ${score}`);
