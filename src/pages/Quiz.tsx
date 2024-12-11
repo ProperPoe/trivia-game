@@ -1,39 +1,71 @@
-import React, { useState, CSSProperties } from 'react';
+import React, { useState, useEffect, CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import QuestionCard from '../components/QuestionCard';
 import Button from '../components/Button';
 
-const questions = [
-  {
-    question: 'What is the capital of France?',
-    answers: ['Paris', 'London', 'Rome', 'Berlin'],
-    correct: 'Paris',
-  },
-  {
-    question: 'What is 2 + 2?',
-    answers: ['3', '4', '5', '6'],
-    correct: '4',
-  },
-];
+const API_URL = "https://pn39j08p5f.execute-api.us-east-2.amazonaws.com/GetTriviaQuestions";
 
 export default function Quiz() {
+  const [questions, setQuestions] = useState<any[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const fetchQuestions = async () => {
+      try {
+        const response = await fetch(API_URL);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch questions: ${response.status}`);
+        }
+        const data = await response.json();
+        setQuestions(data);
+        setLoading(false);
+      } catch (err: any) {
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+
+    fetchQuestions();
+  }, []);
+
   const handleAnswerClick = (answer: string) => {
-    if (answer === questions[currentQuestionIndex].correct) {
+    if (answer === questions[currentQuestionIndex].Answer) {
       setScore(score + 1);
     }
 
     const nextQuestionIndex = currentQuestionIndex + 1;
 
-    if (nextQuestionIndex <= questions.length) {
+    if (nextQuestionIndex < questions.length) {
       setCurrentQuestionIndex(nextQuestionIndex);
     } else {
       console.log(`Game over! Final score: ${score}`);
     }
   };
+
+  if (loading) {
+    return (
+      <div style={outerContainerStyle}>
+        <div style={innerContainerStyle}>
+          <p>Loading questions...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={outerContainerStyle}>
+        <div style={innerContainerStyle}>
+          <p>Error: {error}</p>
+          <Button text="Back to Home" onClick={() => navigate('/')} />
+        </div>
+      </div>
+    );
+  }
 
   if (currentQuestionIndex >= questions.length) {
     return (
@@ -51,8 +83,8 @@ export default function Quiz() {
     <div style={outerContainerStyle}>
       <div style={innerContainerStyle}>
         <QuestionCard
-          question={questions[currentQuestionIndex].question}
-          answers={questions[currentQuestionIndex].answers}
+          question={questions[currentQuestionIndex].Question}
+          answers={questions[currentQuestionIndex].Options}
           onAnswerClick={handleAnswerClick}
         />
         <div style={{ marginTop: '20px' }}>
