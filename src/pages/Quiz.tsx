@@ -1,4 +1,16 @@
+import React from 'react';
+import QuestionCard from '../components/QuestionCard';
+
 export default function Quiz() {
-    return <h1>Welcome to the Trivia Game!</h1>;
-  }
-  
+  const handleAnswerClick = (answer: string) => {
+    console.log(`You clicked: ${answer}`);
+  };
+
+  return (
+    <QuestionCard
+      question="What is the capital of France?"
+      answers={['Paris', 'London', 'Rome', 'Berlin']}
+      onAnswerClick={handleAnswerClick}
+    />
+  );
+}
