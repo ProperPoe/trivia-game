@@ -1,31 +1,38 @@
-import React, { useState, useEffect, CSSProperties } from 'react';
-import { useNavigate } from 'react-router-dom';
-import QuestionCard from '../components/QuestionCard';
-import Button from '../components/Button';
+import React, { useState, useEffect } from "react";
+import { useAuth } from "react-oidc-context";
+import { useNavigate } from "react-router-dom";
 
-const API_URL = "https://pn39j08p5f.execute-api.us-east-2.amazonaws.com/GetTriviaQuestions";
+interface Question {
+  QuestionID: string;
+  Question: string;
+  Options: string[];
+  Answer: string;
+}
+
+interface CognitoUserProfile {
+  "cognito:username"?: string; // Optional since it may not always exist
+  email?: string; 
+  [key: string]: any; 
+}
+
+const QUIZ_API_URL = "https://r93ynamaqb.execute-api.us-east-2.amazonaws.com/Leaderboard";
 
 export default function Quiz() {
-  const [questions, setQuestions] = useState<any[]>([]);
+  const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [score, setScore] = useState<number>(0);
+  const [authView, SetAuthView] = useState<string>("")
   const navigate = useNavigate();
+  const auth = useAuth();
 
   useEffect(() => {
     const fetchQuestions = async () => {
       try {
-        const response = await fetch(API_URL);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch questions: ${response.status}`);
-        }
-        const data = await response.json();
+        const response = await fetch("https://pn39j08p5f.execute-api.us-east-2.amazonaws.com/GetTriviaQuestions");
+        const data: Question[] = await response.json();
         setQuestions(data);
-        setLoading(false);
-      } catch (err: any) {
-        setError(err.message);
-        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching questions:", error);
       }
     };
 
@@ -42,75 +49,68 @@ export default function Quiz() {
     if (nextQuestionIndex < questions.length) {
       setCurrentQuestionIndex(nextQuestionIndex);
     } else {
-      console.log(`Game over! Final score: ${score}`);
+      handleSubmitScore(); // Submit score when quiz ends
     }
   };
+  console.log(auth.user)
+  const handleSubmitScore = async () => {
+    const profile = auth.user?.profile as CognitoUserProfile;
 
-  if (loading) {
-    return (
-      <div style={outerContainerStyle}>
-        <div style={innerContainerStyle}>
-          <p>Loading questions...</p>
-        </div>
-      </div>
-    );
-  }
+    // Access cognito:username safely
+    const username = profile["cognito:username"] || "Anonymous";
+    const payload = {
+      UserID: username,
+      Score: score,
+    };
 
-  if (error) {
-    return (
-      <div style={outerContainerStyle}>
-        <div style={innerContainerStyle}>
-          <p>Error: {error}</p>
-          <Button text="Back to Home" onClick={() => navigate('/')} />
-        </div>
-      </div>
-    );
-  }
+    try {
+
+      const response = await fetch(QUIZ_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${auth.user?.access_token}`, // Ensure valid token
+        },
+        credentials: "include", // Include credentials for Cognito
+        body: JSON.stringify(payload),
+      });
+    
+      if (response.ok) {
+        console.log("Score submitted successfully!");
+      } else {
+        const errorResponse = await response.json();
+        console.error("Failed to submit score:", errorResponse);
+      }
+    } catch (error) {
+      console.error("Error submitting score:", error);
+    }
+
+    navigate("/leaderboard"); // Navigate to leaderboard after submission
+  };
+
+  if (!questions.length) return <div>Loading...</div>;
 
   if (currentQuestionIndex >= questions.length) {
     return (
-      <div style={outerContainerStyle}>
-        <div style={innerContainerStyle}>
-          <h1>Game Over!</h1>
-          <p>Your final score: {score}</p>
-          <Button text="Back to Home" onClick={() => navigate('/')} />
-        </div>
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+        <h1>Game Over!</h1>
+        <p>Your final score: {score}</p>
       </div>
     );
   }
 
   return (
-    <div style={outerContainerStyle}>
-      <div style={innerContainerStyle}>
-        <QuestionCard
-          question={questions[currentQuestionIndex].Question}
-          answers={questions[currentQuestionIndex].Options}
-          onAnswerClick={handleAnswerClick}
-        />
-        <div style={{ marginTop: '20px' }}>
-          <Button text="Back to Home" onClick={() => navigate('/')} />
-        </div>
-      </div>
+    <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h1>{questions[currentQuestionIndex].Question}</h1>
+      {questions[currentQuestionIndex].Options.map((option, index) => (
+        <button
+          key={index}
+          onClick={() => handleAnswerClick(option)}
+          style={{ margin: "10px", padding: "10px 20px" }}
+        >
+          {option}
+        </button>
+      ))}
     </div>
   );
 }
-
-const outerContainerStyle: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  height: '100vh',
-  width: '100%',
-  backgroundColor: '#f9f9f9',
-};
-
-const innerContainerStyle: CSSProperties = {
-  textAlign: 'center',
-  padding: '20px',
-  border: '1px solid #ddd',
-  borderRadius: '10px',
-  backgroundColor: '#fff',
-  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-  maxWidth: '500px',
-  width: '90%',
-};
