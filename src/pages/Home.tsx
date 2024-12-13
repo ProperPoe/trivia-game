@@ -18,6 +18,12 @@ export default function Home() {
           Start Quiz
         </button>
         <button
+          onClick={() => navigate("/leaderboard")}
+          style={buttonStyle}
+        >
+          View Leaderboard
+        </button>
+        <button
           onClick={() => auth.removeUser()}
           style={signOutButtonStyle}
         >

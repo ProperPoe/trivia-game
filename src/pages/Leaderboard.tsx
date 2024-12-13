@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios"; 
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 interface LeaderboardEntry {
   UserID: string;
@@ -11,6 +12,7 @@ export default function Leaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
@@ -54,6 +56,12 @@ export default function Leaderboard() {
           ))}
         </tbody>
       </table>
+      <button
+        onClick={() => navigate("/")}
+        style={backButtonStyle}
+      >
+        Back to Home
+      </button>
     </div>
   );
 }
@@ -68,4 +76,14 @@ const tableHeaderStyle: React.CSSProperties = {
 const tableCellStyle: React.CSSProperties = {
   border: "1px solid #ddd",
   padding: "8px",
+};
+
+const backButtonStyle: React.CSSProperties = {
+  marginTop: "20px",
+  padding: "10px 20px",
+  backgroundColor: "#007bff",
+  color: "white",
+  border: "none",
+  borderRadius: "5px",
+  cursor: "pointer",
 };
