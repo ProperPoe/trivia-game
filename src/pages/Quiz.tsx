@@ -109,9 +109,11 @@ export default function Quiz() {
       <div style={{ textAlign: "center", marginTop: "50px" }}>
         <h1>Game Over!</h1>
         <p>Your final score: {score}</p>
+        <p>Redirecting to Leaderboard...</p>
       </div>
     );
   }
+  
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
