@@ -10,9 +10,9 @@ interface Question {
 }
 
 interface CognitoUserProfile {
-  "cognito:username"?: string; // Optional since it may not always exist
-  email?: string; 
-  [key: string]: any; 
+  "cognito:username"?: string;
+  email?: string;
+  [key: string]: any;
 }
 
 const QUIZ_API_URL = "https://r93ynamaqb.execute-api.us-east-2.amazonaws.com/Leaderboard";
@@ -21,7 +21,7 @@ export default function Quiz() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [score, setScore] = useState<number>(0);
-  const [authView, SetAuthView] = useState<string>("")
+  const [timeLeft, setTimeLeft] = useState<number>(15); // Timer state
   const navigate = useNavigate();
   const auth = useAuth();
 
@@ -39,24 +39,39 @@ export default function Quiz() {
     fetchQuestions();
   }, []);
 
-  const handleAnswerClick = (answer: string) => {
-    if (answer === questions[currentQuestionIndex].Answer) {
-      setScore(score + 1);
+  useEffect(() => {
+    // Timer logic
+    if (timeLeft <= 0) {
+      handleTimeout(); // Handle timeout when time runs out
     }
 
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer); // Cleanup on unmount or question change
+  }, [timeLeft]);
+
+  const handleTimeout = () => {
     const nextQuestionIndex = currentQuestionIndex + 1;
 
-    if (nextQuestionIndex < questions.length) {
+    if (nextQuestionIndex <= questions.length) {
       setCurrentQuestionIndex(nextQuestionIndex);
+      setTimeLeft(15); // Reset timer for the next question
     } else {
       handleSubmitScore(); // Submit score when quiz ends
     }
   };
-  console.log(auth.user)
+
+  const handleAnswerClick = (answer: string) => {
+    if (answer === questions[currentQuestionIndex].Answer) {
+      setScore(score + 1);
+    }
+    handleTimeout(); // Move to the next question or end quiz
+  };
+
   const handleSubmitScore = async () => {
     const profile = auth.user?.profile as CognitoUserProfile;
-
-    // Access cognito:username safely
     const username = profile["cognito:username"] || "Anonymous";
     const payload = {
       UserID: username,
@@ -64,17 +79,16 @@ export default function Quiz() {
     };
 
     try {
-
       const response = await fetch(QUIZ_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${auth.user?.access_token}`, // Ensure valid token
+          Authorization: `Bearer ${auth.user?.access_token}`,
         },
-        credentials: "include", // Include credentials for Cognito
+        credentials: "include",
         body: JSON.stringify(payload),
       });
-    
+
       if (response.ok) {
         console.log("Score submitted successfully!");
       } else {
@@ -85,7 +99,7 @@ export default function Quiz() {
       console.error("Error submitting score:", error);
     }
 
-    navigate("/leaderboard"); // Navigate to leaderboard after submission
+    navigate("/leaderboard");
   };
 
   if (!questions.length) return <div>Loading...</div>;
@@ -102,6 +116,7 @@ export default function Quiz() {
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
       <h1>{questions[currentQuestionIndex].Question}</h1>
+      <h2>Time Left: {timeLeft} seconds</h2>
       {questions[currentQuestionIndex].Options.map((option, index) => (
         <button
           key={index}
