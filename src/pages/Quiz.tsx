@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 
 interface Question {
   QuestionID: string;
-  Question: string;
-  Options: string[];
-  Answer: string;
+  question: string;
+  options: string[];
+  answer: string;
 }
 
 interface CognitoUserProfile {
@@ -29,8 +29,14 @@ export default function Quiz() {
     const fetchQuestions = async () => {
       try {
         const response = await fetch("https://pn39j08p5f.execute-api.us-east-2.amazonaws.com/GetTriviaQuestions");
-        const data: Question[] = await response.json();
-        setQuestions(data);
+        const data = await response.json();
+
+        // Check if the data is an array
+        if (Array.isArray(data)) {
+          setQuestions(data);
+        } else {
+          console.error("Unexpected API response format:", data);
+        }
       } catch (error) {
         console.error("Error fetching questions:", error);
       }
@@ -55,7 +61,7 @@ export default function Quiz() {
   const handleTimeout = () => {
     const nextQuestionIndex = currentQuestionIndex + 1;
 
-    if (nextQuestionIndex <= questions.length) {
+    if (nextQuestionIndex < questions.length) {
       setCurrentQuestionIndex(nextQuestionIndex);
       setTimeLeft(15); // Reset timer for the next question
     } else {
@@ -64,7 +70,7 @@ export default function Quiz() {
   };
 
   const handleAnswerClick = (answer: string) => {
-    if (answer === questions[currentQuestionIndex].Answer) {
+    if (answer === questions[currentQuestionIndex]?.answer) {
       setScore(score + 1);
     }
     handleTimeout(); // Move to the next question or end quiz
@@ -102,8 +108,12 @@ export default function Quiz() {
     navigate("/leaderboard");
   };
 
-  if (!questions.length) return <div>Loading...</div>;
+  // Show a loading message while questions are being fetched
+  if (!questions || questions.length === 0) {
+    return <div>Loading...</div>;
+  }
 
+  // Show Game Over message if the quiz ends
   if (currentQuestionIndex >= questions.length) {
     return (
       <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -113,13 +123,12 @@ export default function Quiz() {
       </div>
     );
   }
-  
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>{questions[currentQuestionIndex].Question}</h1>
+      <h1>{questions[currentQuestionIndex]?.question || "Loading question..."}</h1>
       <h2>Time Left: {timeLeft} seconds</h2>
-      {questions[currentQuestionIndex].Options.map((option, index) => (
+      {questions[currentQuestionIndex]?.options.map((option, index) => (
         <button
           key={index}
           onClick={() => handleAnswerClick(option)}
