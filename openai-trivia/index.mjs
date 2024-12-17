@@ -15,10 +15,11 @@ export const handler = async (event) => {
     messages: [
       {
         role: "user",
-        content: "Generate 10 trivia questions with 4 options each. Format as an array of JSON objects.",
+        content: "Generate 10 trivia questions on a variety of topics with 4 multiple-choice answers each. Format the response as a valid JSON array of objects"
+,
       },
     ],
-    temperature: 0.7,
+    temperature: 0.9,
   };
 
   try {
