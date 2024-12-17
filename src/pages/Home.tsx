@@ -2,14 +2,23 @@
 import { useAuth } from "react-oidc-context";
 import { useNavigate } from "react-router-dom";
 
+interface CognitoUserProfile {
+  "cognito:username"?: string; 
+  email?: string; 
+  [key: string]: any; 
+}
+
 export default function Home() {
   const auth = useAuth();
   const navigate = useNavigate();
 
   if (auth.isAuthenticated) {
+    const profile = auth.user?.profile as CognitoUserProfile;
+    const username = profile["cognito:username"] || "Anonymous";
+
     return (
       <div style={homeContainerStyle}>
-        <h1>Welcome back, {auth.user?.profile.email}!</h1>
+        <h1>Welcome back, {username}!</h1>
         <p>Ready to test your knowledge?</p>
         <button
           onClick={() => navigate("/quiz")}
