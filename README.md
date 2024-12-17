@@ -1,50 +1,97 @@
-# React + TypeScript + Vite
+# 🎉 TRIVIA GAME 🎮
+A FULL-STACK INTERACTIVE TRIVIA QUIZ GAME BUILT WITH REACT, AWS LAMBDA, API GATEWAY, COGNITO, DYNAMODB, AND OPENAI. THIS APPLICATION ALLOWS USERS TO TEST THEIR KNOWLEDGE WITH DYNAMICALLY GENERATED QUESTIONS, TRACK SCORES, AND VIEW A REAL-TIME LEADERBOARD.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## 🚀 FEATURES
 
-Currently, two official plugins are available:
+### 🔹 DYNAMIC TRIVIA QUESTIONS
+- Questions are generated in real-time using the OpenAI API (GPT-3.5).
+- Includes 4 answer options with one correct answer.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### 🔹 TIMED QUIZ EXPERIENCE
+- 15-second timer for each question.
+- Automatic progression when the timer expires.
 
-## Expanding the ESLint configuration
+### 🔹 SECURE USER AUTHENTICATION
+- Users authenticate securely using AWS Cognito.
+- Scores are recorded with the user’s Cognito username.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+### 🔹 REAL-TIME LEADERBOARD
+- Displays scores in descending order.
+- Only the user's highest score is recorded.
 
-- Configure the top-level `parserOptions` property like this:
+### 🔹 ROBUST AWS INTEGRATION
+- AWS Lambda handles serverless API requests.
+- DynamoDB stores quiz results and leaderboard data.
+- API Gateway routes requests securely.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+---
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## 🛠️ TECH STACK
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+### FRONTEND
+- React with TypeScript  
+- React-Router for navigation  
+- React-OIDC-Context for authentication  
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+### BACKEND
+- AWS Lambda (Node.js)  
+- API Gateway  
+- Amazon DynamoDB  
+- OpenAI API  
+
+### AUTHENTICATION
+- AWS Cognito  
+
+---
+
+## ⚙️ ARCHITECTURE DIAGRAM
+
+## 🚧 SETUP INSTRUCTIONS
+### 1. BACKEND SETUP
+Deploy AWS Lambda functions:
+GetTriviaQuestions → Fetches questions via OpenAI
+LeaderboardHandler → Manages leaderboard data
+Configure API Gateway with routes:
+GET /GetTriviaQuestions
+GET /Leaderboard
+POST /Leaderboard
+Enable CORS for front end.
+### 2. FRONTEND SETUP
+Clone the repository:
+bash
+Copy code
+git clone https://github.com/ProperPoe/trivia-game.git
+cd trivia-game
+Install dependencies:
+bash
+Copy code
+npm install
+Add environment variables:
+REACT_APP_OPENAI_API_KEY
+API Gateway endpoint URLs
+Run the app:
+bash
+Copy code
+npm run dev
+
+## ✅ FUTURE ENHANCEMENTS
+Integrate AWS SageMaker for AI-powered personalized questions.
+Add animations and enhanced UI.
+Allow users to create their own trivia challenges.
+## 🎯 HOW TO PLAY
+Sign In: Log in securely with AWS Cognito.
+Start Quiz: Fetch dynamic questions and begin.
+Answer Questions: 15 seconds per question.
+Submit Score: Your score appears on the leaderboard.
+View Leaderboard: Compete for the top spot.
+## 📄 LICENSE
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+## 👨‍💻 AUTHOR
+ProperPoe
+GitHub: ProperPoe
+
+## 🌟 ACKNOWLEDGMENTS
+OpenAI for trivia generation.
+AWS for scalable backend infrastructure.
+React for seamless frontend development.
